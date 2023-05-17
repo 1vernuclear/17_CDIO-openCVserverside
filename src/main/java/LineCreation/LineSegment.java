@@ -3,34 +3,26 @@ package LineCreation;
 import org.opencv.core.Point;
 
 public class LineSegment {
-    private Point startPoint;
-    private Point endPoint;
+    private double a;
+    private double b;
 
-    public LineSegment(Point startPoint, Point endPoint) {
-        this.startPoint = startPoint;
-        this.endPoint = endPoint;
+    public LineSegment(double a, double b) {
+        this.a = a;
+        this.b = b;
     }
 
-    public Point getStartPoint() {
-        return startPoint;
+    public double getA() {
+        return this.a;
     }
 
-    public Point getEndPoint() {
-        return endPoint;
+    public double getB() {
+        return this.b;
     }
 
-    public void setStartPoint(Point startPoint) {
-        this.startPoint = startPoint;
-    }
-
-    public void setEndPoint(Point endPoint) {
-        this.endPoint = endPoint;
-    }
-
-    public double getLength() {
+    /*public double getLength() {
         double dx = endPoint.x - startPoint.x;
         double dy = endPoint.y - startPoint.y;
         return Math.sqrt(dx * dx + dy * dy);
-    }
+    }*/
 }
 

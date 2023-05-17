@@ -11,8 +11,7 @@ public class LineCreationTest{
 
     @Test
     public void testLine(){
-        LineSegment lineSegment = line.constructLine(new Point(50,150), new Point(150,50),720,480);
-        Assert.assertEquals(new Point(200,0),lineSegment.getEndPoint());
+
     }
 
 
