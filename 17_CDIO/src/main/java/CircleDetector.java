@@ -1,3 +1,5 @@
+package main.java;
+
 import org.opencv.core.*;
         import org.opencv.imgproc.Imgproc;
         import org.opencv.videoio.VideoCapture;

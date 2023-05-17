@@ -1,3 +1,5 @@
+package main.java.OpenCVRecognition;
+
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgproc.Imgproc;

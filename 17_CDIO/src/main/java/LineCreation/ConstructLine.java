@@ -1,4 +1,4 @@
-package PointDetection;
+package main.java.LineCreation;
 
 import org.opencv.core.*;
 

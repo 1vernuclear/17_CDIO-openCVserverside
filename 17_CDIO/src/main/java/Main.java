@@ -1,3 +1,5 @@
+package main.java;
+
 import org.opencv.core.Core;
 
 public class Main {
