@@ -16,9 +16,13 @@ public class Main {
         System.out.println(Core.VERSION);
 
         // Open the video capture
-        VideoCapture videoCapture = new VideoCapture(0);
+        //VideoCapture videoCapture = new VideoCapture(0);
+
+        //variable for testing
+        VideoCapture videoCapture = null;
 
         RedRectangleDetection detectField = new RedRectangleDetection(videoCapture);
+        detectField.testRedRectangleDetection();
 
         //stop capturing
         videoCapture.release();
