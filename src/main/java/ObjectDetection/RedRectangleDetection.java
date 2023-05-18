@@ -1,5 +1,7 @@
 package ObjectDetection;
 
+import LineCreation.LineEquation;
+import LineCreation.LineSegment;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -19,10 +21,51 @@ public class RedRectangleDetection {
 
     public void detectField(VideoCapture videoCapture){
 
-        Point[] corners = findRedBitMask(retrieveFrame(videoCapture));
-        if (corners == null)
+        //Point[] corners = findCorners(retrieveFrame(videoCapture));
+        Point[] corners = findCorners(findLines(retrieveFrame(videoCapture)));
+        //if (corners == null)
             System.out.println("field detection failed");
     }
+
+    private Point[] findCorners(List<LineSegment> lines) {
+
+        Point[] corners = new Point[4];
+
+        /*int j = 0;
+        for (int i = 0; i < lines.size()  ; i ++) {
+            corners[j] = findIntersection(lines.get(i),lines.get(i + 1));
+            j++;
+        }*/
+        corners[0] = findIntersection(lines.get(0),lines.get(1));
+        corners[1] = findIntersection(lines.get(2),lines.get(3));
+        corners[2] = findIntersection(lines.get(4),lines.get(5));
+        corners[3] = findIntersection(lines.get(6),lines.get(7));
+        return corners;
+    }
+
+    private Point findIntersection(LineSegment horizontal, LineSegment vertical) {
+        horizontal.determineEquation();
+        vertical.determineEquation();
+
+        double m1 = horizontal.getA();  // slope of line 1
+        double c1 = horizontal.getB();  // y-intercept of line 1
+
+        double m2 = vertical.getA(); // slope of line 2
+        double c2 = vertical.getB();  // y-intercept of line 2
+
+        if (vertical.isInfiniteSlope()){
+            // Handle the case of a vertical line
+            double y = m1 * vertical.getEndPoint().x + c1;  // Calculate the y-coordinate of intersection
+            return new Point(vertical.getEndPoint().x,y);
+        }
+        // Calculate the intersection point
+        double x = (c2 - c1) / (m1 - m2);
+        double y = m1 * x + c1;
+
+        return new Point(x,y);
+    }
+
+
 
     /**
      * method to test how well working the methods are using png images.
@@ -32,11 +75,32 @@ public class RedRectangleDetection {
         //String imagePath = getRessourcePath() + "/FieldImages/fieldwithtape.png";
         String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
         Mat frame = Imgcodecs.imread(imagePath);
-        Point[] corners = findRedBitMask(frame);
+        /*Point[] corners = findCorners(frame);
         for (Point x : corners){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
+        drawCorners(corners, frame);*/
+
+        Point[] corners = findCorners(findLines(frame));
         drawCorners(corners, frame);
+        for (Point x : corners){
+            System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
+        }
+        //drawLinePoints(lines, frame);
+    }
+
+    private void drawLinePoints(List<LineSegment> lines, Mat frame){
+        // Draw circles for each coordinate
+        for (LineSegment line : lines) {
+            Imgproc.circle(frame, line.getEndPoint(), 5, new Scalar(0, 255, 0), -1);
+            Imgproc.circle(frame, line.getStartPoint(), 5, new Scalar(0, 255, 0), -1);
+        }
+
+        // Display the frame
+        HighGui.imshow("Frame", frame);
+        HighGui.waitKey();
+
+        frame.release();
     }
 
     private void drawCorners(Point[] corners, Mat frame) {
@@ -91,54 +155,92 @@ public class RedRectangleDetection {
         return (resourcePath != null) ? resourcePath : "file not found";
     }
 
-    private Point[] findRedBitMask(Mat frame){
+    private List<LineSegment> findLines(Mat frame){
         Point[] corners = new Point[4];
 
-        // Define the center region to exclude
-        int centerX = frame.cols() / 2; // X-coordinate of the center
-        int centerY = frame.rows() / 2; // Y-coordinate of the center
-        int exclusionRadius = 100; // Radius of the center region to exclude
-
-        // Create a mask to exclude the center region
-        Mat mask = new Mat(frame.size(), CvType.CV_8UC1, Scalar.all(255));
-        Imgproc.circle(mask, new Point(centerX, centerY), exclusionRadius, new Scalar(0), -1);
-
-        //create hsv frame
-        Mat hsvFrame = new Mat();
-        //turn original frame into hsv frame for better color detection
-        Imgproc.cvtColor(frame,hsvFrame,Imgproc.COLOR_BGR2HSV);
-
-        // Define the lower and upper thresholds for red color
-        Scalar lowerRed = new Scalar(0, 100, 100);
-        Scalar upperRed = new Scalar(10, 255, 255);
-
         //bit mask for all the red areas in the frame
-        Mat redMask = new Mat();
-        //all red areas will be represented as white dots while non red areas will be black.
-        Core.inRange(hsvFrame, lowerRed, upperRed, redMask);
+        Mat redMask = findRedMask(frame);
+        applyCanny(redMask); //applying the canny edge detection algorithm for more precise detection.
 
-        // Extract the line edge points from the bitmask
-        List<Point[]> lineEdgePoints = extractLineEdgePoints(redMask);
+        // Define the number of divisions and the size of each division
+        int areaWidth = frame.cols() / 2;
+        int areaHeight = frame.rows() / 2;
 
-        // Print the coordinates of the line edge points
-        for (Point[] edgePoints : lineEdgePoints) {
-            System.out.println("Line Edge Points:");
-            System.out.println("Point 1: " + edgePoints[0]);
-            Point startPoint = edgePoints[0];
-            System.out.println("Point 2: " + edgePoints[1]);
-            Point endPoint = edgePoints[1];
+        List<LineSegment> lineSegments = new ArrayList<>();
 
-            // Draw a green line on the frame
-            Imgproc.line(frame, startPoint, endPoint, new Scalar(0, 255, 0), 2);
+        // Divide the bitmask frame into smaller areas and search for line intersections
+        for (int i = 0; i < 2; i++) {
+            for (int j = 0; j < 2; j++) {
+                // Define the top-left and bottom-right corners of the area
+                int startX = j * areaWidth;
+                int startY = i * areaHeight;
+                int endX = startX + areaWidth;
+                int endY = startY + areaHeight;
+
+                // Extract the area of interest from the bitmask frame
+                Mat areaOfInterest = new Mat(redMask, new Rect(new Point(startX, startY), new Point(endX, endY)));
+
+                // Find the horizontal and vertical lines in the area of interest
+                lineSegments.add(findLinesegment(areaOfInterest, false, (j > 0), (i > 0), areaWidth, areaHeight));
+                lineSegments.add(findLinesegment(areaOfInterest, true, (j > 0), (i > 0), areaWidth, areaHeight));
+            }
         }
 
-        // Display the frame
-        HighGui.imshow("Green Line", frame);
-        HighGui.waitKey(0);
+        for (LineSegment x : lineSegments){
+            System.out.println("Corner = (" + x.getStartPoint() + "," + x.getEndPoint() +")");
+        }
 
-        //return findRectangleCorners(corners,redMask);
-        //return  findParallelogramCorners(corners, redMask);
-        return findShapeCorners(corners, redMask);
+        return lineSegments;
+    }
+
+    private LineSegment findLinesegment(Mat grayscaleImage, boolean vertical, boolean addToX, boolean addToY, double areaWidth, double areaHeight) {
+        Mat lines = new Mat();
+        int rho = 1; // Distance resolution of the accumulator in pixels
+        double theta = Math.PI / 180; // Angle resolution of the accumulator in radians
+        int threshold = 100; // Minimum number of intersections to detect a line
+        int minLineLength = 50; // Minimum length of a line in pixels
+        int maxLineGap = 10; // Maximum gap between line segments allowed in pixels
+        Imgproc.HoughLinesP(grayscaleImage, lines, rho, theta, threshold, minLineLength, maxLineGap);
+
+        double maxLineLength = 0;
+        Point startPoint = new Point();
+        Point endPoint = new Point();
+
+        for (int i = 0; i < lines.rows(); i++) {
+            double[] line = lines.get(i, 0);
+            double x1 = line[0];
+            double y1 = line[1];
+            double x2 = line[2];
+            double y2 = line[3];
+
+            double length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+            double angle = Math.atan2(y2 - y1, x2 - x1) * 180 / Math.PI;
+
+            if(vertical) {
+                if (Math.abs(angle) >= 75 && Math.abs(angle) <= 105 && length > maxLineLength) {
+                    maxLineLength = length;
+                    startPoint = new Point(x1, y1);
+                    endPoint = new Point(x2, y2);
+                }
+            }else{
+                if (Math.abs(angle) >= -25 && Math.abs(angle) <= 25 && length > maxLineLength) {
+                    maxLineLength = length;
+                    startPoint = new Point(x1, y1);
+                    endPoint = new Point(x2, y2);
+                }
+            }
+        }
+        if (addToX){
+            startPoint.x += areaWidth;
+            endPoint.x += areaWidth;
+        }
+
+        if (addToY){
+            startPoint.y += areaHeight;
+            endPoint.y += areaHeight;
+        }
+
+        return new LineSegment(startPoint, endPoint);
     }
 
     private static List<Point[]> extractLineEdgePoints(Mat bitmask) {
@@ -310,6 +412,39 @@ public class RedRectangleDetection {
         corners = approx.toArray();
 
         return corners;
+    }
+
+    private Mat findRedMask(Mat frame){
+        // Define the center region to exclude
+        int centerX = frame.cols() / 2; // X-coordinate of the center
+        int centerY = frame.rows() / 2; // Y-coordinate of the center
+        int exclusionRadius = 100; // Radius of the center region to exclude
+
+        // Create a mask to exclude the center region
+        Mat mask = new Mat(frame.size(), CvType.CV_8UC1, Scalar.all(255));
+        Imgproc.circle(mask, new Point(centerX, centerY), exclusionRadius, new Scalar(0), -1);
+
+        //create hsv frame
+        Mat hsvFrame = new Mat();
+        //turn original frame into hsv frame for better color detection
+        Imgproc.cvtColor(frame,hsvFrame,Imgproc.COLOR_BGR2HSV);
+
+        // Define the lower and upper thresholds for red color
+        Scalar lowerRed = new Scalar(0, 100, 100);
+        Scalar upperRed = new Scalar(10, 255, 255);
+
+        Mat redMask = new Mat();
+        //all red areas will be represented as white dots while non red areas will be black.
+        Core.inRange(hsvFrame, lowerRed, upperRed, redMask);
+
+        return redMask;
+    }
+
+    private void applyCanny(Mat redMask){
+        double threshold1 = 50;  // Lower threshold for the intensity gradient
+        double threshold2 = 150; // Upper threshold for the intensity gradient
+        Mat edges = new Mat();
+        Imgproc.Canny(redMask, edges, threshold1, threshold2);
     }
 
 }

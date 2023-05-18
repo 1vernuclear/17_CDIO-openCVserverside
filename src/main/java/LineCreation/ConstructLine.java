@@ -3,7 +3,9 @@ package LineCreation;
 import org.opencv.core.*;
 
 public class ConstructLine {
-    public static LineSegment line;
+    public static LineEquation line;
+
+
     /**
      * This method creates the constants for the linear line that is determined based on the robots heading and given as
      * f ( x ) = a * x + b;
@@ -11,13 +13,14 @@ public class ConstructLine {
      * @param p1 iis the point that marks the back of the robot.
      * @return the lines equation
      */
-    public LineSegment constructLine(Point p1, Point p2) {
+    public static double[] constructLine(Point p1, Point p2) {
+        double[] arr = new double[2];
         // Calculate the slope and y-intercept of the line
-        double a = (p2.y - p1.y) / (p2.x - p1.x);
-        double b = p1.y - a * p1.x;
+        arr[0]= (p2.y - p1.y) / (p2.x - p1.x);
+        arr[1] = p1.y - arr[0] * p1.x;
 
         // Construct and return the line segment
-        return new LineSegment(a, b);
+        return arr;
     }
 
     /**
@@ -31,7 +34,7 @@ public class ConstructLine {
      */
     public void determineDistance(Point p1, Point p2, Point[] p3){
         //find the lines equation
-        line = constructLine(p1, p2);
+        /*line = constructLine(p1, p2);
 
         double supposedYvalue;
         int closestPoint;
@@ -43,8 +46,9 @@ public class ConstructLine {
                 closestValue = Math.abs((supposedYvalue - p3[i].y));
                 closestPoint = i;
             }
-        }
+        }*/
 
     }
+
 
 }
