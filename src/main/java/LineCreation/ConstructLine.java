@@ -22,6 +22,7 @@ public class ConstructLine {
 
     /**
      * This method is supposed to determine what balls lies in a convinient path to pick up
+     * So far this method will just determine what point lies closest to the line.
      * @param p2 front point of robot.
      * @param p1 backpoint of robot.
      * @param p3 An array of points of all the balls detected.
