@@ -14,6 +14,9 @@ import java.util.List;
 
 public class RedRectangleDetection {
 
+    private int frameWidth;
+    private int frameHeight;
+
     public RedRectangleDetection(VideoCapture videoCapture){
         //detectField(videoCapture);
     }
@@ -25,8 +28,36 @@ public class RedRectangleDetection {
     public void detectField(VideoCapture videoCapture){
 
         Point[] corners = findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
+        Point[] floorCorners = findFloorCorners(corners);
         //if (corners == null)
             System.out.println("field detection failed");
+    }
+
+    /**
+     * OBS!! This method needs more testing!!
+     *
+     * Fiinds an approximation of the coordiinates of the folding in the corner.
+     * @param corners the intersection of the field
+     * @return the coordinates of the approximated foldiing intersections for each corner.
+     */
+    private Point[] findFloorCorners(Point[] corners) {
+        Point[] floorCorners = new Point[4];
+
+        double pixelRatioWidth = 0.015372790161414296;
+        double pixelRatioHeight = 0.0273224043715847;
+        double width = pixelRatioWidth * this.frameWidth;
+        double height = pixelRatioHeight * this.frameHeight;
+        System.out.println(pixelRatioHeight);
+        System.out.println(pixelRatioWidth);
+        floorCorners[0] = new Point((width + corners[0].x),(height + corners[0].y));
+
+        floorCorners[1] = new Point((corners[1].x - width), (height + corners[1].y));
+
+        floorCorners[2] = new Point((width + corners[2].x), (corners[2].y - height));
+
+        floorCorners[3] = new Point((corners[3].x - width), (corners[3].y - height));
+
+        return floorCorners;
     }
 
     /**
@@ -37,7 +68,8 @@ public class RedRectangleDetection {
         Mat frame = Imgcodecs.imread(imagePath);
 
         Point[] corners = findCorners(findLines(frame));
-        drawCorners(corners, frame);
+        Point[] floorCorners = findFloorCorners(corners);
+        drawCorners(corners, floorCorners, frame);
         for (Point x : corners){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
@@ -46,13 +78,37 @@ public class RedRectangleDetection {
     /**
      * This method will draw green circles on each point received as input.
      * @param corners coordinates to draw at.
+     * @param floorCorners
      * @param frame frame to draw on.
      */
-    private void drawCorners(Point[] corners, Mat frame) {
+    private void drawCorners(Point[] corners, Point[] floorCorners, Mat frame) {
         // Draw circles for each coordinate
         for (Point coordinate : corners) {
             Imgproc.circle(frame, coordinate, 5, new Scalar(0, 255, 0), -1);
         }
+        for (Point coordinate : floorCorners) {
+            Imgproc.circle(frame, coordinate, 5, new Scalar(0, 255, 0), -1);
+        }
+        /*
+        Point testPoint1 = corners[0];
+        testPoint1.x += 20;
+        testPoint1.y += 20;
+        Imgproc.circle(frame, testPoint1, 5, new Scalar(0, 255, 0), -1);
+
+        Point testPoint2 = corners[1];
+        testPoint2.x -= 20;
+        testPoint2.y += 20;
+        Imgproc.circle(frame, testPoint2, 5, new Scalar(0, 255, 0), -1);
+
+        Point testPoint3 = corners[2];
+        testPoint3.x += 20;
+        testPoint3.y -= 20;
+        Imgproc.circle(frame, testPoint3, 5, new Scalar(0, 255, 0), -1);
+
+        Point testPoint4 = corners[3];
+        testPoint4.x -= 20;
+        testPoint4.y -= 20;
+        Imgproc.circle(frame, testPoint4, 5, new Scalar(0, 255, 0), -1); */
 
         // Display the frame
         HighGui.imshow("Frame", frame);
@@ -184,9 +240,11 @@ public class RedRectangleDetection {
         Mat redMask = findRedMask(frame);
         //redMask = applyCanny(redMask); //applying the canny edge detection algorithm for more precise detection.
 
+        this.frameWidth = frame.cols();
+        this.frameHeight = frame.rows();
         // Define the number of divisions and the size of each division
-        int areaWidth = frame.cols() / 2;
-        int areaHeight = frame.rows() / 2;
+        int areaWidth = frameWidth / 2;
+        int areaHeight = frameHeight / 2;
 
         List<LineSegment> lineSegments = new ArrayList<>();
 
@@ -209,9 +267,9 @@ public class RedRectangleDetection {
         }
 
         //Just a test code to view results -- should be deleted when tested thoroughly! :D
-        for (LineSegment x : lineSegments){
-            System.out.println("Corner = (" + x.getStartPoint() + "," + x.getEndPoint() +")");
-        }
+        //for (LineSegment x : lineSegments){
+        //    System.out.println("Corner = (" + x.getStartPoint() + "," + x.getEndPoint() +")");
+        //}
 
         return lineSegments;
     }
