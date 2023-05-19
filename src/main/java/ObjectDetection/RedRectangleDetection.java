@@ -29,8 +29,31 @@ public class RedRectangleDetection {
 
         Point[] corners = findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
         Point[] floorCorners = findFloorCorners(corners);
+        Point[] goalPostCoordinates = determineGoalPosts(floorCorners);
         //if (corners == null)
             System.out.println("field detection failed");
+    }
+
+    private Point[] determineGoalPosts(Point[] floorCorners) {
+        Point[] goalPosts = new Point[2];
+
+        // finds posts for lefthand side.
+        Point leftGoalCenter = getAverage(floorCorners[0],floorCorners[2]);
+
+        //finds posts for righthand side.
+        Point rightGoalCenter = getAverage(floorCorners[1],floorCorners[3]);
+
+        goalPosts[0] = leftGoalCenter;
+        goalPosts[1] = rightGoalCenter;
+
+        return goalPosts;
+    }
+
+    private Point getAverage(Point upperPoint, Point lowerPoint) {
+        double centerX = (upperPoint.x + lowerPoint.x) / 2;
+        double centerY = (upperPoint.y + lowerPoint.y) / 2;
+
+        return new Point(centerX,centerY);
     }
 
     /**
@@ -89,6 +112,11 @@ public class RedRectangleDetection {
         for (Point coordinate : floorCorners) {
             Imgproc.circle(frame, coordinate, 5, new Scalar(0, 255, 0), -1);
         }
+        Point leftPostCenter = getAverage(floorCorners[0],floorCorners[2]);
+        Imgproc.circle(frame, leftPostCenter, 5, new Scalar(0, 255, 0), -1);
+
+        Point rightPostCenter = getAverage(floorCorners[1],floorCorners[3]);
+        Imgproc.circle(frame, rightPostCenter, 5, new Scalar(0, 255, 0), -1);
         /*
         Point testPoint1 = corners[0];
         testPoint1.x += 20;
