@@ -2,7 +2,13 @@ package main.java;
 
 import org.opencv.core.Core;
 import ObjectDetection.*;
+import org.opencv.core.Point;
 import org.opencv.videoio.VideoCapture;
+
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 public class Main {
 
@@ -21,12 +27,35 @@ public class Main {
         //variable for testing
         VideoCapture videoCapture = null;
 
-        RedRectangleDetection detectField = new RedRectangleDetection(videoCapture);
-        detectField.testRedRectangleDetection();
+        FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(executorservice(videoCapture));
 
         //stop capturing
         videoCapture.release();
 
+    }
+
+    private static Point[] executorservice(VideoCapture videoCapture){
+        // Create an ExecutorService with a fixed thread pool
+        ExecutorService executor = Executors.newFixedThreadPool(1);
+
+        Point[] areaOfInterest = new Point[4];
+
+        // Create an instance of your task
+        Callable<Point[]> task = new findAreaOfInterestTask(videoCapture);
+        // Submit the task to the executor
+        Future<Point[]> future = executor.submit(task);
+
+        // Retrieve the result from the future object
+        try {
+            areaOfInterest = future.get();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }finally {
+            // Shutdown the executor when done
+            executor.shutdown();
+        }
+
+        return areaOfInterest;
     }
 }
 

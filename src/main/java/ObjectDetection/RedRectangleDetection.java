@@ -23,15 +23,21 @@ public class RedRectangleDetection {
 
     /**
      * Method to be used in real time.
+     * We will use the coordinates found to defiine an area of interest, in which we will search
+     * for the remaining objects that is : tabletennis balls, obstacle and Mr. Robot.
+     * Having a subsection of the actual frame defined minimized the computational work errors / disturbances
+     * of observations not of interest.
      * @param videoCapture live video capture.
      */
-    public void detectField(VideoCapture videoCapture){
+    public Point[] detectField(VideoCapture videoCapture){
 
         Point[] corners = findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
         Point[] floorCorners = findFloorCorners(corners);
-        Point[] goalPostCoordinates = determineGoalPosts(floorCorners);
+        Point[] goalCenters = determineGoalPosts(floorCorners);
         //if (corners == null)
-            System.out.println("field detection failed");
+        System.out.println("field detection failed");
+
+        return corners;
     }
 
     private Point[] determineGoalPosts(Point[] floorCorners) {
