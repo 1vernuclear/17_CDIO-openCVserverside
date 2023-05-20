@@ -28,5 +28,4 @@ hs_err_pid*
 # PDF files
 *.pdf
 
-*.xml
 *.idea
