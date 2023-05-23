@@ -2,6 +2,7 @@ package main.java;
 
 import org.opencv.core.Core;
 import ObjectDetection.*;
+import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.videoio.VideoCapture;
 
@@ -26,6 +27,8 @@ public class Main {
     //ie courseCoordinates[0] will be the to left corner. courseCoordinates[2] will be bottom left corner, and so on.
     public static Point[] courseCoordinates = new Point[10];
 
+    public static Mat frame = new Mat();
+
     public static void main(String[] args) {
         //print current version of opencv
         System.out.println(Core.VERSION);
@@ -39,10 +42,10 @@ public class Main {
 
         executorservice(videoCapture);
 
-        //FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(executorservice(videoCapture, courseCoordinates));
+        FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(videoCapture, courseCoordinates);
 
         //stop capturing
-        videoCapture.release();
+        //videoCapture.release();
 
     }
 

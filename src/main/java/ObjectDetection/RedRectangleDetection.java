@@ -1,6 +1,7 @@
 package ObjectDetection;
 
 import LineCreation.LineSegment;
+import main.java.Main;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -31,7 +32,6 @@ public class RedRectangleDetection {
      * @param videoCapture live video capture.
      */
     public List<Point> detectField(VideoCapture videoCapture){
-
         findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
         findFloorCorners();
         determineGoalCenters();
@@ -90,7 +90,7 @@ public class RedRectangleDetection {
         findCorners(findLines(frame));
         findFloorCorners();
         determineGoalCenters();
-        drawCorners(coordinates, frame);
+        //drawCorners(coordinates, frame);
         for (Point x : coordinates){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
@@ -143,18 +143,15 @@ public class RedRectangleDetection {
      * @param videoCapture the live video.
      * @return frame to analyze.
      */
-    public Mat retrieveFrame(VideoCapture videoCapture){
+    public static Mat retrieveFrame(VideoCapture videoCapture){
         // Check if the VideoCapture object is opened successfully
         if (!videoCapture.isOpened()) {
             System.out.println("Failed to open the webcam.");
             return null;
         }
-
-        // mat object to store frame
-        Mat frame = new Mat();
         //String imagePath = null;
 
-        if (videoCapture.read(frame)) { //reads next frame of videocapture into the frame variable.
+        if (videoCapture.read(Main.frame)) { //reads next frame of videocapture into the frame variable.
             // Save the frame as a PNG file
             //imagePath = getRessourcePath();
             //Imgcodecs.imwrite(imagePath, frame);
@@ -162,7 +159,7 @@ public class RedRectangleDetection {
         } else {
             System.out.println("Failed to capture a frame.");
         }
-        return frame;
+        return Main.frame;
         //return (imagePath != null) ? imagePath : "no file";
     }
 
