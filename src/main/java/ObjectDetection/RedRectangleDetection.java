@@ -90,7 +90,7 @@ public class RedRectangleDetection {
         findCorners(findLines(frame));
         findFloorCorners();
         determineGoalCenters();
-        //drawCorners(coordinates, frame);
+        drawCorners(coordinates, frame);
         for (Point x : coordinates){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
@@ -110,6 +110,25 @@ public class RedRectangleDetection {
         Imgproc.circle(frame, coordinates.get(8), 5, new Scalar(0, 255, 0), -1);
 
         Imgproc.circle(frame, coordinates.get(9), 5, new Scalar(0, 255, 0), -1);
+
+        List<Point> pointList = new ArrayList<>();
+        pointList.add(new Point(596.0, 302.0));
+        pointList.add(new Point(575.0, 408.0));
+        pointList.add(new Point(531.0, 348.0));
+        pointList.add(new Point(638.0, 363.0));
+        MatOfPoint2f points = new MatOfPoint2f();
+        points.fromList(pointList);
+
+        Point center = new Point();
+        float[] radius = new float[1];
+        Imgproc.minEnclosingCircle(points, center, radius);
+        Imgproc.circle(frame, center, (int) radius[0], new Scalar(0, 255, 0), 2);
+
+        Imgproc.circle(frame, new Point(596.0, 302.0), 5, new Scalar(0, 255, 0), -1);
+        Imgproc.circle(frame, new Point(575.0, 408.0), 5, new Scalar(0, 255, 0), -1);
+        Imgproc.circle(frame, new Point(531.0, 348.0), 5, new Scalar(0, 255, 0), -1);
+        Imgproc.circle(frame, new Point(638.0, 363.0), 5, new Scalar(0, 255, 0), -1);
+
         /*
         Point testPoint1 = corners[0];
         testPoint1.x += 20;

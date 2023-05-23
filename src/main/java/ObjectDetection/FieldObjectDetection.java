@@ -17,7 +17,7 @@ public class FieldObjectDetection {
     public FieldObjectDetection(VideoCapture videoCapture, Point[] areaOfInterest) {
         String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
         Mat frame = Imgcodecs.imread(imagePath);
-        Mat redCrossMask = createRedCrossMask(frame, areaOfInterest[0], areaOfInterest[1], areaOfInterest[3], areaOfInterest[2]);
+        Mat redCrossMask = createRedCrossMask(frame, areaOfInterest[4], areaOfInterest[5], areaOfInterest[7], areaOfInterest[6]);
 
         //Mat redCrossMask = createRedCrossMask(Objects.requireNonNull(RedRectangleDetection.retrieveFrame(videoCapture)), areaOfInterest[0], areaOfInterest[1], areaOfInterest[3], areaOfInterest[2]);
         fillObstableArray(redCrossMask);
