@@ -2,6 +2,7 @@ package ObjectDetection;
 
 import LineCreation.LineSegment;
 import org.opencv.core.*;
+import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
@@ -14,7 +15,11 @@ public class FieldObjectDetection {
     private LineSegment[] obstacleLines = new LineSegment[2];
 
     public FieldObjectDetection(VideoCapture videoCapture, Point[] areaOfInterest) {
-        Mat redCrossMask = createRedCrossMask(Objects.requireNonNull(RedRectangleDetection.retrieveFrame(videoCapture)), areaOfInterest[0], areaOfInterest[1], areaOfInterest[3], areaOfInterest[2]);
+        String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
+        Mat frame = Imgcodecs.imread(imagePath);
+        Mat redCrossMask = createRedCrossMask(frame, areaOfInterest[0], areaOfInterest[1], areaOfInterest[3], areaOfInterest[2]);
+
+        //Mat redCrossMask = createRedCrossMask(Objects.requireNonNull(RedRectangleDetection.retrieveFrame(videoCapture)), areaOfInterest[0], areaOfInterest[1], areaOfInterest[3], areaOfInterest[2]);
         fillObstableArray(redCrossMask);
 
     }

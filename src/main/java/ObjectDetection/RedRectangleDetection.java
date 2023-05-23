@@ -32,11 +32,11 @@ public class RedRectangleDetection {
      * @param videoCapture live video capture.
      */
     public List<Point> detectField(VideoCapture videoCapture){
-        findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
-        findFloorCorners();
-        determineGoalCenters();
+        //findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
+        //findFloorCorners();
+        //determineGoalCenters();
         //if (corners == null)
-        System.out.println("field detection failed");
+        //System.out.println("field detection failed");
 
         return coordinates;
     }
