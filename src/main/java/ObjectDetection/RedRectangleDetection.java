@@ -16,6 +16,7 @@ public class RedRectangleDetection {
 
     private int frameWidth;
     private int frameHeight;
+    public List<Point> coordinates = new ArrayList<>();
 
     public RedRectangleDetection(VideoCapture videoCapture){
         //detectField(videoCapture);
@@ -29,30 +30,23 @@ public class RedRectangleDetection {
      * of observations not of interest.
      * @param videoCapture live video capture.
      */
-    public Point[] detectField(VideoCapture videoCapture){
+    public List<Point> detectField(VideoCapture videoCapture){
 
-        Point[] corners = findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
-        Point[] floorCorners = findFloorCorners(corners);
-        Point[] goalCenters = determineGoalPosts(floorCorners);
+        findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
+        findFloorCorners();
+        determineGoalCenters();
         //if (corners == null)
         System.out.println("field detection failed");
 
-        return corners;
+        return coordinates;
     }
 
-    private Point[] determineGoalPosts(Point[] floorCorners) {
-        Point[] goalPosts = new Point[2];
-
+    private void determineGoalCenters() {
         // finds posts for lefthand side.
-        Point leftGoalCenter = getAverage(floorCorners[0],floorCorners[2]);
+        coordinates.add(8, getAverage(coordinates.get(0),coordinates.get(2)));
 
         //finds posts for righthand side.
-        Point rightGoalCenter = getAverage(floorCorners[1],floorCorners[3]);
-
-        goalPosts[0] = leftGoalCenter;
-        goalPosts[1] = rightGoalCenter;
-
-        return goalPosts;
+        coordinates.add(9, getAverage(coordinates.get(1),coordinates.get(3)));
     }
 
     private Point getAverage(Point upperPoint, Point lowerPoint) {
@@ -66,27 +60,24 @@ public class RedRectangleDetection {
      * OBS!! This method needs more testing!!
      *
      * Fiinds an approximation of the coordiinates of the folding in the corner.
-     * @param corners the intersection of the field
      * @return the coordinates of the approximated foldiing intersections for each corner.
      */
-    private Point[] findFloorCorners(Point[] corners) {
-        Point[] floorCorners = new Point[4];
-
+    private void findFloorCorners() {
         double pixelRatioWidth = 0.015372790161414296;
         double pixelRatioHeight = 0.0273224043715847;
+
         double width = pixelRatioWidth * this.frameWidth;
         double height = pixelRatioHeight * this.frameHeight;
+
         System.out.println(pixelRatioHeight);
         System.out.println(pixelRatioWidth);
-        floorCorners[0] = new Point((width + corners[0].x),(height + corners[0].y));
+        coordinates.add(4, new Point((width + coordinates.get(0).x),(height + coordinates.get(0).y)));
 
-        floorCorners[1] = new Point((corners[1].x - width), (height + corners[1].y));
+        coordinates.add(5, new Point((coordinates.get(1).x - width),(height + coordinates.get(1).y)));
 
-        floorCorners[2] = new Point((width + corners[2].x), (corners[2].y - height));
+        coordinates.add(6, new Point((width + coordinates.get(2).x),(coordinates.get(2).y) - height));
 
-        floorCorners[3] = new Point((corners[3].x - width), (corners[3].y - height));
-
-        return floorCorners;
+        coordinates.add(7, new Point((coordinates.get(3).x - width),(coordinates.get(3).y) - height));
     }
 
     /**
@@ -96,33 +87,29 @@ public class RedRectangleDetection {
         String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
         Mat frame = Imgcodecs.imread(imagePath);
 
-        Point[] corners = findCorners(findLines(frame));
-        Point[] floorCorners = findFloorCorners(corners);
-        drawCorners(corners, floorCorners, frame);
-        for (Point x : corners){
+        findCorners(findLines(frame));
+        findFloorCorners();
+        determineGoalCenters();
+        drawCorners(coordinates, frame);
+        for (Point x : coordinates){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
     }
 
     /**
      * This method will draw green circles on each point received as input.
-     * @param corners coordinates to draw at.
-     * @param floorCorners
+     * @param coordinates coordinates to draw at.
      * @param frame frame to draw on.
      */
-    private void drawCorners(Point[] corners, Point[] floorCorners, Mat frame) {
+    private void drawCorners(List<Point> coordinates, Mat frame) {
         // Draw circles for each coordinate
-        for (Point coordinate : corners) {
+        for (Point coordinate : coordinates) {
             Imgproc.circle(frame, coordinate, 5, new Scalar(0, 255, 0), -1);
         }
-        for (Point coordinate : floorCorners) {
-            Imgproc.circle(frame, coordinate, 5, new Scalar(0, 255, 0), -1);
-        }
-        Point leftPostCenter = getAverage(floorCorners[0],floorCorners[2]);
-        Imgproc.circle(frame, leftPostCenter, 5, new Scalar(0, 255, 0), -1);
 
-        Point rightPostCenter = getAverage(floorCorners[1],floorCorners[3]);
-        Imgproc.circle(frame, rightPostCenter, 5, new Scalar(0, 255, 0), -1);
+        Imgproc.circle(frame, coordinates.get(8), 5, new Scalar(0, 255, 0), -1);
+
+        Imgproc.circle(frame, coordinates.get(9), 5, new Scalar(0, 255, 0), -1);
         /*
         Point testPoint1 = corners[0];
         testPoint1.x += 20;
@@ -203,20 +190,14 @@ public class RedRectangleDetection {
      * We loop through our list of lines and perform the findIntersection method on each pair.
      * We end up with a point array of all the corners.
      * @param lines the list of linesegments.
-     * @return An array of points, with the coordinates of each corner.
      */
-    private Point[] findCorners(List<LineSegment> lines) {
-
-        Point[] corners = new Point[4];
-
+    private void findCorners(List<LineSegment> lines) {
         int j = 0;
 
         for (int i = 0; i < lines.size() / 2 ; i ++) {
-            corners[i] = findIntersection(lines.get(j),lines.get(++j));
+            coordinates.add(i, findIntersection(lines.get(j),lines.get(++j)));
             j++;
         }
-
-        return corners;
     }
 
     /**
