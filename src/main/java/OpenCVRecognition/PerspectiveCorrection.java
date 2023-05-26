@@ -3,15 +3,17 @@ package OpenCVRecognition;
 import org.opencv.calib3d.Calib3d;
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;
-import org.opencv.imgproc.Imgproc;
-
 import java.util.ArrayList;
 import java.util.List;
 
 public class PerspectiveCorrection {
     public static void main(String[] args) {
+        // Load OpenCV library
+        System.loadLibrary(Core.NATIVE_LIBRARY_NAME);
+
+
         // Load the source image
-        Mat sourceImage = Imgcodecs.imread("path/to/your/image.jpg");
+        Mat sourceImage = Imgcodecs.imread("C:\\Users\\miro\\OneDrive - Danmarks Tekniske Universitet\\DTU\\4.Semester\\CDIO-Project\\Billeder\\RobotBilleder\\p\\40.jpg");
 
         // Define the source points in the image (top-left, top-right, bottom-left, bottom-right)
         MatOfPoint2f sourcePoints = new MatOfPoint2f(
