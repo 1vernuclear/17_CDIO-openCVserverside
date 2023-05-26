@@ -27,26 +27,49 @@ public class Main {
     //ie courseCoordinates[0] will be the to left corner. courseCoordinates[2] will be bottom left corner, and so on.
     public static Point[] courseCoordinates = new Point[10];
 
-    public static Mat frame = new Mat();
-
     public static void main(String[] args) {
         //print current version of opencv
         System.out.println(Core.VERSION);
 
-        // Open the video capture
-        //VideoCapture videoCapture = new VideoCapture(0);
-
         //variable for testing
         VideoCapture videoCapture = null;
+
         //VideoCapture videoCapture = new VideoCapture(0);
+        //setMaxResolution(videoCapture);
 
         executorservice(videoCapture);
 
-        FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(videoCapture, courseCoordinates);
+        //FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(videoCapture, courseCoordinates);
+
+        MrRobotDetection mrRobot = new MrRobotDetection(courseCoordinates);
+        mrRobot.detectRobot();
 
         //stop capturing
         //videoCapture.release();
+    }
 
+    private static void setMaxResolution(VideoCapture videoCapture) {
+        // Set the property for maximum resolution to a high value
+        int maxResolutionProperty = -1;
+        // Find the property representing the maximum resolution
+        double maxResolution = 0.0;
+        ;
+        for (int prop = 0; prop < 20; prop++) { // Iterate over the properties
+            double value = videoCapture.get(prop);
+            if (value > maxResolution) {
+                maxResolution = value;
+                maxResolutionProperty = prop;
+            }
+        }
+
+        videoCapture.set(maxResolutionProperty, 9999);
+
+        // Get the resolution of the video capture
+        int width = (int) videoCapture.get(3);
+        int height = (int) videoCapture.get(4);
+
+        // Print the resolution
+        System.out.println("Resolution: " + width + "x" + height);
     }
 
     private static void executorservice(VideoCapture videoCapture){

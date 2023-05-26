@@ -18,9 +18,9 @@ public class findAreaOfInterestTask implements Callable<List<Point>> {
 
     public List<Point> call() throws Exception{
         RedRectangleDetection detectField = new RedRectangleDetection(this.videoCapture);
-        detectField.testRedRectangleDetection();
+        return detectField.testRedRectangleDetection();
 
-        return detectField.detectField(this.videoCapture);
+        //return detectField.detectField(this.videoCapture);
     }
 
 }

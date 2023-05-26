@@ -15,9 +15,11 @@ import java.util.List;
 
 public class RedRectangleDetection {
 
-    private int frameWidth;
-    private int frameHeight;
+    private final int frameWidth = 1920;
+    private final int frameHeight = 1080;
     public List<Point> coordinates = new ArrayList<>();
+    private Mat frame;
+
 
     public RedRectangleDetection(VideoCapture videoCapture){
         //detectField(videoCapture);
@@ -25,28 +27,29 @@ public class RedRectangleDetection {
 
     /**
      * Method to be used in real time.
-     * We will use the coordinates found to defiine an area of interest, in which we will search
-     * for the remaining objects that is : tabletennis balls, obstacle and Mr. Robot.
+     * We will use the coordinates found to define an area of interest, in which we will search
+     * for the remaining objects that is : table tennis balls, obstacle and Mr. Robot.
      * Having a subsection of the actual frame defined minimized the computational work errors / disturbances
      * of observations not of interest.
      * @param videoCapture live video capture.
      */
     public List<Point> detectField(VideoCapture videoCapture){
-        //findCorners(findLines(retrieveFrame(videoCapture))); // find corners.
-        //findFloorCorners();
-        //determineGoalCenters();
-        //if (corners == null)
-        //System.out.println("field detection failed");
+        retrieveFrame(videoCapture);
+        findCorners(findLines(frame)); // find corners.
+        findFloorCorners();
+        determineGoalCenters();
+
+        drawCorners(coordinates, frame);
 
         return coordinates;
     }
 
     private void determineGoalCenters() {
         // finds posts for lefthand side.
-        coordinates.add(8, getAverage(coordinates.get(0),coordinates.get(2)));
+        coordinates.add(8, getAverage(coordinates.get(4),coordinates.get(6)));
 
         //finds posts for righthand side.
-        coordinates.add(9, getAverage(coordinates.get(1),coordinates.get(3)));
+        coordinates.add(9, getAverage(coordinates.get(5),coordinates.get(7)));
     }
 
     private Point getAverage(Point upperPoint, Point lowerPoint) {
@@ -65,27 +68,26 @@ public class RedRectangleDetection {
     private void findFloorCorners() {
         double pixelRatioWidth = 0.015372790161414296;
         double pixelRatioHeight = 0.0273224043715847;
-
-        double width = pixelRatioWidth * this.frameWidth;
-        double height = pixelRatioHeight * this.frameHeight;
+        double adjustWidth = pixelRatioWidth * frameWidth;
+        double adjustHeight = pixelRatioHeight * frameHeight;
 
         System.out.println(pixelRatioHeight);
         System.out.println(pixelRatioWidth);
-        coordinates.add(4, new Point((width + coordinates.get(0).x),(height + coordinates.get(0).y)));
+        coordinates.add(4, new Point((adjustWidth + coordinates.get(0).x),(adjustHeight + coordinates.get(0).y)));
 
-        coordinates.add(5, new Point((coordinates.get(1).x - width),(height + coordinates.get(1).y)));
+        coordinates.add(5, new Point((coordinates.get(1).x - adjustWidth),(adjustHeight + coordinates.get(1).y)));
 
-        coordinates.add(6, new Point((width + coordinates.get(2).x),(coordinates.get(2).y) - height));
+        coordinates.add(6, new Point((adjustWidth + coordinates.get(2).x),(coordinates.get(2).y) - adjustHeight));
 
-        coordinates.add(7, new Point((coordinates.get(3).x - width),(coordinates.get(3).y) - height));
+        coordinates.add(7, new Point((coordinates.get(3).x - adjustWidth),(coordinates.get(3).y) - adjustHeight));
     }
 
     /**
      * method to test how well working the methods are using png images.
      */
-    public void testRedRectangleDetection(){
-        String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
-        Mat frame = Imgcodecs.imread(imagePath);
+    public List<Point> testRedRectangleDetection(){
+        String imagePath = "src/main/resources/FieldImages/detectMrRobot.jpg";
+        frame = Imgcodecs.imread(imagePath);
 
         findCorners(findLines(frame));
         findFloorCorners();
@@ -94,6 +96,8 @@ public class RedRectangleDetection {
         for (Point x : coordinates){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
+
+        return coordinates;
     }
 
     /**
@@ -111,7 +115,7 @@ public class RedRectangleDetection {
 
         Imgproc.circle(frame, coordinates.get(9), 5, new Scalar(0, 255, 0), -1);
 
-        List<Point> pointList = new ArrayList<>();
+        /*List<Point> pointList = new ArrayList<>();
         pointList.add(new Point(596.0, 302.0));
         pointList.add(new Point(575.0, 408.0));
         pointList.add(new Point(531.0, 348.0));
@@ -128,27 +132,7 @@ public class RedRectangleDetection {
         Imgproc.circle(frame, new Point(575.0, 408.0), 5, new Scalar(0, 255, 0), -1);
         Imgproc.circle(frame, new Point(531.0, 348.0), 5, new Scalar(0, 255, 0), -1);
         Imgproc.circle(frame, new Point(638.0, 363.0), 5, new Scalar(0, 255, 0), -1);
-
-        /*
-        Point testPoint1 = corners[0];
-        testPoint1.x += 20;
-        testPoint1.y += 20;
-        Imgproc.circle(frame, testPoint1, 5, new Scalar(0, 255, 0), -1);
-
-        Point testPoint2 = corners[1];
-        testPoint2.x -= 20;
-        testPoint2.y += 20;
-        Imgproc.circle(frame, testPoint2, 5, new Scalar(0, 255, 0), -1);
-
-        Point testPoint3 = corners[2];
-        testPoint3.x += 20;
-        testPoint3.y -= 20;
-        Imgproc.circle(frame, testPoint3, 5, new Scalar(0, 255, 0), -1);
-
-        Point testPoint4 = corners[3];
-        testPoint4.x -= 20;
-        testPoint4.y -= 20;
-        Imgproc.circle(frame, testPoint4, 5, new Scalar(0, 255, 0), -1); */
+        */
 
         // Display the frame
         HighGui.imshow("Frame", frame);
@@ -162,24 +146,23 @@ public class RedRectangleDetection {
      * @param videoCapture the live video.
      * @return frame to analyze.
      */
-    public static Mat retrieveFrame(VideoCapture videoCapture){
+    public void retrieveFrame(VideoCapture videoCapture){
         // Check if the VideoCapture object is opened successfully
         if (!videoCapture.isOpened()) {
             System.out.println("Failed to open the webcam.");
-            return null;
+            return;
         }
-        //String imagePath = null;
+        String imagePath = null;
 
-        if (videoCapture.read(Main.frame)) { //reads next frame of videocapture into the frame variable.
-            // Save the frame as a PNG file
+        this.frame = new Mat();
+        if (videoCapture.read(this.frame)) { //reads next frame of videocapture into the frame variable.
+             //Save the frame as a PNG file
             //imagePath = getRessourcePath();
-            //Imgcodecs.imwrite(imagePath, frame);
+            //Imgcodecs.imwrite(imagePath, this.frame);
             //System.out.println("Frame saved as " + imagePath);
         } else {
             System.out.println("Failed to capture a frame.");
         }
-        return Main.frame;
-        //return (imagePath != null) ? imagePath : "no file";
     }
 
     /**
@@ -271,8 +254,6 @@ public class RedRectangleDetection {
         Mat redMask = findRedMask(frame);
         //redMask = applyCanny(redMask); //applying the canny edge detection algorithm for more precise detection.
 
-        this.frameWidth = frame.cols();
-        this.frameHeight = frame.rows();
         // Define the number of divisions and the size of each division
         int areaWidth = frameWidth / 2;
         int areaHeight = frameHeight / 2;
@@ -298,9 +279,11 @@ public class RedRectangleDetection {
         }
 
         //Just a test code to view results -- should be deleted when tested thoroughly! :D
-        //for (LineSegment x : lineSegments){
-        //    System.out.println("Corner = (" + x.getStartPoint() + "," + x.getEndPoint() +")");
-        //}
+        for (LineSegment x : lineSegments){
+            //System.out.println("Corner = (" + x.getStartPoint() + "," + x.getEndPoint() +")");
+            Imgproc.line(this.frame, x.getStartPoint(), x.getEndPoint(), new Scalar(255, 0, 0), 2);
+
+        }
 
         return lineSegments;
     }
@@ -326,7 +309,7 @@ public class RedRectangleDetection {
         int rho = 1; // Distance resolution of the accumulator in pixels
         double theta = Math.PI / 180; // Angle resolution of the accumulator in radians
         int threshold = 100; // Minimum number of intersections to detect a line
-        int minLineLength = 50; // Minimum length of a line in pixels
+        int minLineLength = 200; // Minimum length of a line in pixels
         int maxLineGap = 10; // Maximum gap between line segments allowed in pixels
 
         // The houghLinesP function helps us look for line shapes and patterns.
@@ -390,7 +373,7 @@ public class RedRectangleDetection {
         // Define the center region to exclude
         int centerX = frame.cols() / 2; // X-coordinate of the center
         int centerY = frame.rows() / 2; // Y-coordinate of the center
-        int exclusionRadius = 100; // Radius of the center region to exclude
+        int exclusionRadius = 300; // Radius of the center region to exclude
 
         // Create a mask to exclude the center region
         Mat mask = new Mat(frame.size(), CvType.CV_8UC1, Scalar.all(255));
