@@ -1,4 +1,4 @@
-package main.java;
+package run;
 
 import org.opencv.core.*;
 import org.opencv.imgcodecs.Imgcodecs;

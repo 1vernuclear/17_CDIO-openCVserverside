@@ -1,7 +1,6 @@
 package ObjectDetection;
 
 import LineCreation.LineSegment;
-import main.java.Main;
 import org.opencv.core.*;
 import org.opencv.highgui.HighGui;
 import org.opencv.imgcodecs.Imgcodecs;
@@ -93,7 +92,7 @@ public class RedRectangleDetection {
         findCorners(findLines(frame));
         findFloorCorners();
         determineGoalCenters();
-        drawCorners(coordinates, frame);
+        //drawCorners(coordinates, frame);
         for (Point x : coordinates){
             System.out.println("X coordinate = " + x.x + " AND y coordinate = " + x.y);
         }
@@ -119,6 +118,8 @@ public class RedRectangleDetection {
         Imgproc.circle(frame, new Point(-1029.0, 10.0), 5, new Scalar(0, 255, 0), -1);
         Imgproc.circle(frame, new Point(920.0,460.0), 5, new Scalar(0, 255, 0), -1);
 
+        // Draw a rectangle on the frame
+        Imgproc.rectangle(frame, new Point(400, 400), new Point(700, 700), new Scalar(0, 255, 0), 2);
         /*List<Point> pointList = new ArrayList<>();
         pointList.add(new Point(596.0, 302.0));
         pointList.add(new Point(575.0, 408.0));

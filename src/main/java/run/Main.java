@@ -1,12 +1,10 @@
-package main.java;
+package run;
 
+import ObjectDetection.MrRobotDetection;
 import org.opencv.core.Core;
-import ObjectDetection.*;
-import org.opencv.core.Mat;
 import org.opencv.core.Point;
 import org.opencv.videoio.VideoCapture;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
@@ -41,7 +39,7 @@ public class Main {
 
         //FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(videoCapture, courseCoordinates);
 
-        //MrRobotDetection mrRobot = new MrRobotDetection(courseCoordinates);
+        MrRobotDetection mrRobot = new MrRobotDetection(courseCoordinates);
 
         //stop capturing
         //videoCapture.release();

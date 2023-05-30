@@ -20,13 +20,15 @@ public class MrRobotDetection {
 
     private Point[] areaOfInterest = new Point[4];
     private LineSegment front;
+    private LineSegment back;
     private Point frontCenter;
+    private Point backCenter;
 
 
     public MrRobotDetection(Point[] area){
         System.arraycopy(area, 4, areaOfInterest, 0, areaOfInterest.length);
-        Mat greenMask = detectRobot();
-        front = findLinesegment(greenMask);
+        Mat researchArea = detectRobot();
+        front = findLinesegment(researchArea);
         frontCenter = determineFrontCenter();
         System.out.println(frontCenter.x + " and " + frontCenter.y);
     }

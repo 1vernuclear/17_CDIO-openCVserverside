@@ -1,4 +1,4 @@
-package main.java;
+package run;
 
 import ObjectDetection.RedRectangleDetection;
 import org.opencv.core.Point;
