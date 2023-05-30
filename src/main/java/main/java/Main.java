@@ -41,8 +41,7 @@ public class Main {
 
         //FieldObjectDetection fieldObjectDetection = new FieldObjectDetection(videoCapture, courseCoordinates);
 
-        MrRobotDetection mrRobot = new MrRobotDetection(courseCoordinates);
-        mrRobot.detectRobot();
+        //MrRobotDetection mrRobot = new MrRobotDetection(courseCoordinates);
 
         //stop capturing
         //videoCapture.release();

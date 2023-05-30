@@ -86,7 +86,8 @@ public class RedRectangleDetection {
      * method to test how well working the methods are using png images.
      */
     public List<Point> testRedRectangleDetection(){
-        String imagePath = "src/main/resources/FieldImages/detectMrRobot.jpg";
+        ///String imagePath = "src/main/resources/FieldImages/detectMrRobot.jpg";
+        String imagePath = "src/main/resources/FieldImages/InkedMrRobotBlackGreenEnds.jpg";
         frame = Imgcodecs.imread(imagePath);
 
         findCorners(findLines(frame));
@@ -114,6 +115,9 @@ public class RedRectangleDetection {
         Imgproc.circle(frame, coordinates.get(8), 5, new Scalar(0, 255, 0), -1);
 
         Imgproc.circle(frame, coordinates.get(9), 5, new Scalar(0, 255, 0), -1);
+
+        Imgproc.circle(frame, new Point(-1029.0, 10.0), 5, new Scalar(0, 255, 0), -1);
+        Imgproc.circle(frame, new Point(920.0,460.0), 5, new Scalar(0, 255, 0), -1);
 
         /*List<Point> pointList = new ArrayList<>();
         pointList.add(new Point(596.0, 302.0));

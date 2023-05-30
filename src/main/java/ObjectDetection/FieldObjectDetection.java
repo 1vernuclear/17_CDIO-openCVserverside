@@ -6,13 +6,11 @@ import org.opencv.imgcodecs.Imgcodecs;
 import org.opencv.imgproc.Imgproc;
 import org.opencv.videoio.VideoCapture;
 
-import java.awt.image.BufferedImage;
 import java.util.List;
-import java.util.Objects;
 
 public class FieldObjectDetection {
 
-    private LineSegment[] obstacleLines = new LineSegment[2];
+    public static LineSegment[] crossLines = new LineSegment[2];
 
     public FieldObjectDetection(VideoCapture videoCapture, Point[] areaOfInterest) {
         String imagePath = "src/main/resources/FieldImages/fieldwithcross.png";
@@ -26,12 +24,12 @@ public class FieldObjectDetection {
 
     private void fillObstableArray(Mat redCrossMask) {
         //vertical line
-        obstacleLines[0] = findLinesegment(redCrossMask, true);
+        crossLines[0] = findLinesegment(redCrossMask, true);
 
         //horizontal line
-        obstacleLines[1] = findLinesegment(redCrossMask, false);
+        crossLines[1] = findLinesegment(redCrossMask, false);
 
-        for (LineSegment x : obstacleLines){
+        for (LineSegment x : crossLines){
             System.out.println(x.getEndPoint() + " AND " + x.getStartPoint());
         }
 
@@ -94,13 +92,13 @@ public class FieldObjectDetection {
             //checking if vertical
             //if true we look for vertical, otherwise we look for horizontal, as seen by the degree constraints.
             if(vertical) {
-                if (Math.abs(angle) >= 75 && Math.abs(angle) <= 105 && length > maxLineLength) {
+                if (Math.abs(angle) >= 45 && Math.abs(angle) <= 135 && length > maxLineLength) {
                     maxLineLength = length;
                     startPoint = new Point(x1, y1);
                     endPoint = new Point(x2, y2);
                 }
             }else{
-                if (Math.abs(angle) >= -25 && Math.abs(angle) <= 25 && length > maxLineLength) {
+                if (Math.abs(angle) >= -55 && Math.abs(angle) <= 55 && length > maxLineLength) {
                     maxLineLength = length;
                     startPoint = new Point(x1, y1);
                     endPoint = new Point(x2, y2);
